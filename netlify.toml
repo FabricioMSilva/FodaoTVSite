@@ -1,3 +1,5 @@
+# Netlify config for the static frontend site.
+# Publish from the repository root because this folder is pushed as a standalone site repo.
 [build]
   publish = "."
   command = "echo 'skip build'"
