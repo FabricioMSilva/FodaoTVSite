@@ -3,7 +3,7 @@
 // ============================================
 
 // DOM Elements
-const supabase = window.havkSupabase;
+const havkSupabase = window.havkSupabase;
 const videoPlayer = document.getElementById('video-player');
 const videoContainer = document.querySelector('.video-container');
 const availableGallery = document.getElementById('available-gallery');
@@ -115,11 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initializePlayer() {
-  if (!supabase) {
+  if (!havkSupabase) {
     window.location.href = 'index.html';
     return;
   }
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await havkSupabase.auth.getSession();
   if (!session?.user) {
     window.location.href = 'index.html';
     return;
@@ -127,13 +127,13 @@ async function initializePlayer() {
 
   currentUser = session.user;
   currentUsername = session.user.email || 'Usuário';
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile, error: profileError } = await havkSupabase
     .from('profiles')
     .select('role, is_active, expires_at, display_name')
     .eq('id', session.user.id)
     .single();
   if (profileError || !profile?.is_active || (profile.expires_at && new Date(profile.expires_at) < new Date())) {
-    await supabase.auth.signOut();
+    await havkSupabase.auth.signOut();
     window.location.href = 'index.html';
     return;
   }
@@ -182,7 +182,7 @@ function showPlayerScreen() {
 async function loadPlaylist() {
   try {
     showMessage('Carregando catálogo...', 'info');
-    const { data, error } = await supabase
+    const { data, error } = await havkSupabase
       .from('categories')
       .select('id, slug, name, sort_order')
       .order('sort_order');
@@ -214,7 +214,7 @@ async function loadGroups(category) {
     if (!catalogGroups[category]) {
       const categoryRecord = categoryRecords[category];
       if (!categoryRecord) throw new Error('Categoria não encontrada');
-      const { data, error } = await supabase
+      const { data, error } = await havkSupabase
         .from('content_groups')
         .select('id, name, sort_order, streams(count)')
         .eq('category_id', categoryRecord.id)
@@ -266,7 +266,7 @@ async function loadGroup(groupId, requestedContentType = currentCategory) {
   try {
     showMessage('Carregando grupo selecionado...', 'info');
     const contentType = requestedContentType || currentCategory;
-    const { data, error } = await supabase
+    const { data, error } = await havkSupabase
       .from('streams')
       .select('id, name, stream_url, logo_url, stream_type, content_groups(name)')
       .eq('group_id', groupId)
@@ -1375,7 +1375,7 @@ async function importAdminCatalog() {
   adminImportBtn.disabled = true;
   adminImportBtn.textContent = 'ATUALIZANDO...';
   try {
-    const { data, error } = await supabase.rpc('replace_catalog', { catalog: pendingAdminCatalog });
+    const { data, error } = await havkSupabase.rpc('replace_catalog', { catalog: pendingAdminCatalog });
     if (error) throw error;
     catalogGroups = {};
     categoryRecords = {};
@@ -1582,7 +1582,7 @@ function setupEventListeners() {
   document.querySelectorAll('.logout').forEach(button => {
     button.addEventListener('click', async event => {
       event.preventDefault();
-      await supabase?.auth.signOut();
+      await havkSupabase?.auth.signOut();
       window.location.replace('index.html');
     });
   });
